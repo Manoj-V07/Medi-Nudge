@@ -15,35 +15,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = [
-  ...(process.env.CLIENT_URLS || "").split(",").map((value) => value.trim()).filter(Boolean),
-  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL.trim()] : []),
-  "http://localhost:5173",
-];
-
-const uniqueAllowedOrigins = [...new Set(allowedOrigins)];
-
-const isAllowedOrigin = (origin) => {
-  if (!origin) {
-    return true;
-  }
-
-  if (uniqueAllowedOrigins.includes(origin)) {
-    return true;
-  }
-
-  // Allow Vercel deployments and preview URLs.
-  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
-    return true;
-  }
-
-  return false;
-};
+const FRONTEND_URL = "https://medi-nudge.vercel.app";
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    callback(null, isAllowedOrigin(origin));
-  },
+  origin: FRONTEND_URL,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   optionsSuccessStatus: 204,

@@ -15,10 +15,22 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const FRONTEND_URL = "https://medi-nudge.vercel.app";
+const FRONTEND_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const LOCAL_FRONTEND_ORIGINS = new Set([
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
 
 const corsOptions = {
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    if (!origin || LOCAL_FRONTEND_ORIGINS.has(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   optionsSuccessStatus: 204,

@@ -61,7 +61,8 @@ router.post("/", authMiddleware, async (req, res) => {
             content:
               "You are a disease-awareness chatbot. Allowed topics: disease overview, symptoms, causes, prevention, and general medicine information. Not allowed: diagnosis, treatment suggestions, or acting like a doctor. If the user asks restricted medical advice, respond exactly with: \"" +
               restrictedReply +
-              "\".",
+              "\". " +
+              "For allowed questions, respond in a highly readable structured format. Use bold section headers exactly like **Overview**, **Common Symptoms**, **Possible Causes**, **Prevention**, and **When to Seek Medical Help** when relevant. Put each heading on its own line, then list short bullet points under it. Keep the response concise, avoid long paragraphs, and use markdown-style bullets or numbered lists.",
           },
           {
             role: "user",

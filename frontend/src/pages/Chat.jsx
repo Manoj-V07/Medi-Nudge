@@ -3,6 +3,64 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import Sidebar from "../components/Sidebar";
 
+const renderInlineBold = (text) => {
+  const parts = text.split(/(\*\*.*?\*\*)/g).filter(Boolean);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>;
+    }
+
+    return <span key={`${part}-${index}`}>{part}</span>;
+  });
+};
+
+const renderAssistantMessage = (text) => {
+  const lines = text.split(/\r?\n/);
+
+  return lines.map((line, index) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      return <div key={`space-${index}`} className="h-2" />;
+    }
+
+    const headingMatch = trimmed.match(/^\*\*(.+?)\*\*:?\s*(.*)$/);
+
+    if (headingMatch) {
+      return (
+        <div key={`heading-${index}`} className="mb-2">
+          <div className="text-sm font-semibold text-slate-900">
+            {renderInlineBold(`**${headingMatch[1]}**`)}
+          </div>
+          {headingMatch[2] ? (
+            <div className="mt-1 text-sm leading-6 text-slate-700">
+              {renderInlineBold(headingMatch[2])}
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    const listMatch = trimmed.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
+
+    if (listMatch) {
+      return (
+        <div key={`list-${index}`} className="flex gap-2 pl-1">
+          <span className="mt-1 text-slate-500">•</span>
+          <div className="flex-1">{renderInlineBold(listMatch[1])}</div>
+        </div>
+      );
+    }
+
+    return (
+      <p key={`paragraph-${index}`} className="mb-2 last:mb-0">
+        {renderInlineBold(trimmed)}
+      </p>
+    );
+  });
+};
+
 function Chat() {
   const navigate = useNavigate();
   const [chatInput, setChatInput] = useState("");
@@ -98,10 +156,10 @@ function Chat() {
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 ${
                         item.role === "user"
                           ? "bg-teal-700 text-white"
-                          : "bg-slate-100 text-slate-700"
+                          : "bg-slate-100 text-slate-700 whitespace-pre-wrap break-words"
                       }`}
                     >
-                      {item.text}
+                      {item.role === "bot" ? renderAssistantMessage(item.text) : item.text}
                     </div>
                   </div>
                 ))}

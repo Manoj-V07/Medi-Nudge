@@ -23,23 +23,36 @@ const allowedOrigins = [
 
 const uniqueAllowedOrigins = [...new Set(allowedOrigins)];
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (uniqueAllowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  // Allow Vercel deployments and preview URLs.
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
+    return true;
+  }
+
+  return false;
+};
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    callback(null, isAllowedOrigin(origin));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
+
 connectDB();
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow non-browser requests (no Origin header) and approved frontend origins.
-      if (!origin || uniqueAllowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-
-      callback(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
